@@ -1,1 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pointage Hafid Sajidi</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body {
+            background-color: #000; /* خلفية سوداء */
+            color: #fff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h2 {
+            color: #0000FF; /* عنوان باللون الأزرق */
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .table-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: #000;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 2px solid #333;
+        }
+
+        th {
+            background-color: #FF0000; /* رأس الجدول باللون الأحمر */
+            color: #0000FF; /* الكتابة داخل الرأس باللون الأزرق */
+            padding: 12px;
+            border: 1px solid #333;
+            font-weight: bold;
+        }
+
+        td {
+            border: 1px solid #333;
+            padding: 5px;
+            text-align: center;
+        }
+
+        input {
+            background-color: #000;
+            color: #FFFF00; /* الكتابة داخل الخانات باللون الأصفر */
+            border: 1px solid #444;
+            padding: 8px;
+            width: 90%;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+        }
+
+        .btn-add {
+            background-color: #0000FF; /* زر الإضافة بالأزرق */
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 50%;
+            font-size: 24px;
+            margin: 20px 0;
+            cursor: pointer;
+            box-shadow: 0 0 10px #0000FF;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+
+        .btn-pdf {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .btn-reset {
+            background-color: #555;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+        @media print {
+            .btn-add, .actions, .delete-col { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app-content" class="table-container">
+        <h2>POINTAGE HAFID SAJIDI</h2>
+        <table id="myTable">
+            <thead>
+                <tr>
+                    <th>DATE</th>
+                    <th>STATUT</th>
+                    <th>H/E</th>
+                    <th>H/S</th>
+                    <th class="delete-col"></th>
+                </tr>
+            </thead>
+            <tbody id="tbody">
+                </tbody>
+        </table>
+    </div>
+
+    <button class="btn-add" onclick="addRow()">+</button>
+
+    <div class="actions">
+        <button class="btn-pdf" onclick="downloadPDF()">Télécharger PDF</button>
+        <button class="btn-reset" onclick="clearTable()">Reset</button>
+    </div>
+
+    <script>
+        // دالة لإضافة سطر جديد
+        function addRow(data = {d: '', s: '', he: '', hs: ''}) {
+            const tbody = document.getElementById('tbody');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" value="${data.d}" placeholder="00/00" oninput="saveData()"></td>
+                <td><input type="text" value="${data.s}" placeholder="---" oninput="saveData()"></td>
+                <td><input type="text" value="${data.he}" oninput="saveData()"></td>
+                <td><input type="text" value="${data.hs}" oninput="saveData()"></td>
+                <td class="delete-col"><button onclick="this.parentElement.parentElement.remove();saveData()" style="background:none; border:none; color:red; font-weight:bold;">X</button></td>
+            `;
+            tbody.appendChild(row);
+        }
+
+        // حفظ البيانات في ذاكرة الهاتف
+        function saveData() {
+            const rows = [];
+            document.querySelectorAll('#tbody tr').forEach(tr => {
+                const inputs = tr.querySelectorAll('input');
+                rows.push({ d: inputs[0].value, s: inputs[1].value, he: inputs[2].value, hs: inputs[3].value });
+            });
+            localStorage.setItem('hafidData', JSON.stringify(rows));
+        }
+
+        // تحميل البيانات المحفوظة
+        function loadData() {
+            const saved = localStorage.getItem('hafidData');
+            if(saved) {
+                JSON.parse(saved).forEach(d => addRow(d));
+            } else {
+                for(let i=0; i<5; i++) addRow();
+            }
+        }
+
+        // تحويل الجدول لملف PDF
+        function downloadPDF() {
+            const element = document.getElementById('app-content');
+            const opt = {
+                margin: 10,
+                filename: 'Pointage_Hafid.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#000000' },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function clearTable() {
+            if(confirm("متاكد بغيتي تمسح كاع البيانات؟")) {
+                localStorage.removeItem('hafidData');
+                location.reload();
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
 
